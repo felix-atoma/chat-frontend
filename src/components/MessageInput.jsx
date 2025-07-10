@@ -1,58 +1,57 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { PaperPlaneIcon } from '@radix-ui/react-icons';
 
-export default function MessageInput({ socket, currentRoom, currentUser }) {
+export default function MessageInput({ onSendMessage, onTyping }) {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    const timer = setTimeout(() => {
       if (isTyping) {
-        socket.emit('typing', { isTyping: false, roomId: currentRoom });
+        onTyping(false);
         setIsTyping(false);
       }
-    }, 1500);
+    }, 2000);
 
-    return () => clearTimeout(timeout);
-  }, [isTyping, currentRoom, socket]);
+    return () => clearTimeout(timer);
+  }, [isTyping, onTyping]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!message.trim()) return;
 
-    socket.emit('send_message', {
-      message,
-      roomId: currentRoom,
-      timestamp: new Date().toISOString()
-    });
-    
+    onSendMessage(message);
     setMessage('');
-    socket.emit('typing', { isTyping: false, roomId: currentRoom });
+    onTyping(false);
   };
 
   const handleChange = (e) => {
     setMessage(e.target.value);
     if (!isTyping) {
-      socket.emit('typing', { isTyping: true, roomId: currentRoom });
+      onTyping(true);
       setIsTyping(true);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t">
-      <div className="flex">
+    <form 
+      onSubmit={handleSubmit} 
+      className="w-full px-4 py-3 bg-white border-t shadow-inner"
+    >
+      <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 shadow-sm">
         <input
           type="text"
           value={message}
           onChange={handleChange}
-          className="flex-1 p-2 border rounded-l-lg focus:outline-none"
           placeholder="Type a message..."
+          className="flex-1 bg-transparent text-sm md:text-base outline-none px-2 py-1"
         />
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 transition"
+          className="flex items-center justify-center bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition duration-200"
+          title="Send"
         >
-          Send
+          <PaperPlaneIcon className="h-5 w-5" />
         </button>
       </div>
     </form>
