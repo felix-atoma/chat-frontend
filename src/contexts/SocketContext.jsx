@@ -8,7 +8,7 @@ export const SocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const serverUrl = import.meta.env.VITE_SERVER_URL;
+    const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
 
     const newSocket = io(serverUrl, {
       withCredentials: true,
